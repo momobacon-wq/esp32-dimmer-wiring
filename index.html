@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LED 調光器接線圖</title>
+<meta name="description" content="ESP32 與 TC4427 驅動 IRLB3034 的 24 V LED 調光器，一塊板子的焊接接線圖、特寫與檢查清單。">
+<style>
+:root{
+  color-scheme:light dark;
+  --font:"Noto Sans TC","Microsoft JhengHei","PingFang TC","Heiti TC",system-ui,sans-serif;
+  --bg:#f5f4ef; --surface:#ffffff; --ink:#1d1d1b; --muted:#5a5952; --line:#d6d3c8;
+  --link:#0a57a8; --warn-bg:#fff2cf; --warn-ink:#4f3300; --warn-line:#a86f00;
+  --stop-bg:#fde7e3; --stop-ink:#6e1408; --stop-line:#c4281c;
+  /* 接線面板固定淺色，線色不隨主題變動 */
+  --panel:#fdfdfa; --panel-ink:#1d1d1b; --panel-muted:#55544d;
+  --c24:#c4281c; --cgnd:#161616; --cd:#6a3fb5; --c5:#a35600; --csig:#0a62c2; --cgate:#00745c; --cac:#ad1a7c;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#15161a; --surface:#1f2126; --ink:#ecebe4; --muted:#aeada4; --line:#3a3c43;
+    --link:#8cc2ff; --warn-bg:#3a2b0c; --warn-ink:#ffe2a3; --warn-line:#d39a2a;
+    --stop-bg:#42170f; --stop-ink:#ffd2c9; --stop-line:#ef7a66;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.65}
+a{color:var(--link)}
+.wrap{max-width:1600px;margin:0 auto;padding:32px 32px 64px}
+h1{font-size:2rem;line-height:1.25;margin:0 0 6px;letter-spacing:.01em}
+h2{font-size:1.35rem;line-height:1.35;margin:44px 0 12px}
+h3{font-size:1.05rem;margin:0 0 6px}
+p{margin:0 0 10px}
+.lede{color:var(--muted);max-width:64ch;margin-bottom:16px}
+ol,ul{margin:0;padding-left:1.4em}
+li{margin:0 0 6px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
+
+/* 重建說明與警告 */
+.note{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--muted);padding:12px 16px;border-radius:4px;max-width:88ch}
+.warns{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:16px}
+.warn{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);border-left-width:6px;padding:12px 14px;border-radius:4px;font-size:.95rem;line-height:1.55}
+.warn.stop{background:var(--stop-bg);color:var(--stop-ink);border-color:var(--stop-line)}
+.warn h3{font-size:1.02rem}
+.warn p{margin:0}
+
+/* 接線面板 */
+.panel{background:var(--panel);color:var(--panel-ink);border:1px solid var(--line);border-radius:6px;margin:0;padding:14px}
+.panel figcaption{color:var(--panel-muted);font-size:.9rem;line-height:1.55;margin-top:10px;max-width:96ch}
+.panel figcaption strong{color:var(--panel-ink)}
+.pan{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.pan:focus-visible{outline:3px solid var(--csig);outline-offset:2px}
+.dg{display:block;width:100%;height:auto;font-family:var(--font)}
+.main-dg{min-width:1280px}
+.dg.fit{max-width:560px;margin:0 auto}
+.dg.fit text{font-size:17px}
+.dg.fit text.ts{font-size:15.5px}
+.dg.fit text.nl{font-size:17px}
+.dg.fit text.in{font-size:15px}
+.dg.fit text.tt{font-size:18px}
+.dg.fit text.big{font-size:22px}
+.pan-hint{display:none;font-size:.85rem;color:var(--panel-muted);margin:0 0 6px}
+
+.dg text{font-size:15px;fill:var(--panel-ink)}
+.dg .tt{font-size:17px;font-weight:700}
+.dg .ts{font-size:13.5px}
+.dg .tb{font-weight:700}
+.dg .big{font-size:21px;font-weight:700}
+.dg .mid{text-anchor:middle}
+.dg .end{text-anchor:end}
+.dg .halo{paint-order:stroke;stroke:var(--panel);stroke-width:5px;stroke-linejoin:round}
+.dg .inv{fill:#fff}
+.b{fill:#fff;stroke:#3a3a36;stroke-width:2}
+.b.alt{fill:#eef1f6}
+.b.dash{stroke-dasharray:6 4}
+.cw{fill:#fff2cf;stroke:#8a5a00;stroke-width:3}
+.ci{fill:#f1f0ea;stroke:#8d8b80;stroke-width:1}
+.nc{fill:none;stroke:#77756b;stroke-width:2}
+.w{fill:none;stroke-linejoin:round}
+.hop{fill:none;stroke:var(--panel);stroke-width:11}
+.tm{fill:#fff;stroke-width:2.5}
+.tag{fill:#fff;stroke-width:2}
+.n-24 .w{stroke:var(--c24);stroke-width:3.5}
+.n-gnd .w{stroke:var(--cgnd);stroke-width:3.5;stroke-dasharray:18 5 3 5}
+.n-d .w{stroke:var(--cd);stroke-width:3.5;stroke-dasharray:12 6}
+.n-5v .w{stroke:var(--c5);stroke-width:3.5;stroke-dasharray:6 5}
+.n-sig .w{stroke:var(--csig);stroke-width:3.5;stroke-dasharray:.5 7;stroke-linecap:round}
+.n-gate .w{stroke:var(--cgate);stroke-width:3.5;stroke-dasharray:18 5 3 5 3 5}
+.n-ac .w{stroke:var(--cac);stroke-width:3.5;stroke-dasharray:26 7}
+.w.pw{stroke-width:7}
+.n-5v .w.sol,.n-gate .w.sol,.n-gnd .w.sol{stroke-dasharray:none}
+.n-24 .tm,.n-24 .tag{stroke:var(--c24)} .n-24 .j{fill:var(--c24)} .n-24 text.nl{fill:var(--c24)}
+.n-gnd .tm,.n-gnd .tag{stroke:var(--cgnd)} .n-gnd .j{fill:var(--cgnd)} .n-gnd text.nl{fill:var(--cgnd)}
+.n-d .tm{stroke:var(--cd)} .n-d .j{fill:var(--cd)} .n-d text.nl{fill:var(--cd)}
+.n-5v .tm{stroke:var(--c5)} .n-5v .j{fill:var(--c5)} .n-5v text.nl{fill:var(--c5)}
+.n-sig .tm{stroke:var(--csig)} .n-sig .j{fill:var(--csig)} .n-sig text.nl{fill:var(--csig)}
+.n-gate .tm{stroke:var(--cgate)} .n-gate .j{fill:var(--cgate)} .n-gate text.nl{fill:var(--cgate)}
+.n-ac .tm{stroke:var(--cac)} .n-ac text.nl{fill:var(--cac)}
+.dg text.nl{font-weight:700;font-size:14.5px}
+
+/* 圖例：單選鈕，不需要 JavaScript */
+.legend{border:0;margin:0 0 12px;padding:0;min-inline-size:0}
+.legend legend{padding:0;font-size:.92rem;color:var(--panel-muted);margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{position:relative}
+.legend input{position:absolute;opacity:0;width:1px;height:1px}
+.legend label{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--panel-ink);border:1.5px solid #bdbbae;border-radius:4px;padding:5px 10px;font-size:.9rem;line-height:1.3;cursor:pointer;min-height:36px}
+.legend label svg{flex:none}
+.legend input:checked + label{border-color:#161616;box-shadow:inset 0 0 0 1px #161616;font-weight:700}
+.legend input:focus-visible + label{outline:3px solid var(--csig);outline-offset:2px}
+@media screen{
+  .net{transition:opacity .12s}
+  .netview:has(#f-24:checked) .net:not(.n-24),
+  .netview:has(#f-gnd:checked) .net:not(.n-gnd),
+  .netview:has(#f-d:checked) .net:not(.n-d),
+  .netview:has(#f-5v:checked) .net:not(.n-5v),
+  .netview:has(#f-sig:checked) .net:not(.n-sig),
+  .netview:has(#f-gate:checked) .net:not(.n-gate),
+  .netview:has(#f-ac:checked) .net:not(.n-ac){opacity:.1}
+}
+@media (prefers-reduced-motion:reduce){.net{transition:none}}
+
+.closeups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch}
+.stack{display:grid;gap:16px;align-content:start}
+
+/* 連接表 */
+table{width:100%;border-collapse:collapse;background:var(--surface);font-size:.94rem;line-height:1.5}
+caption{text-align:left;color:var(--muted);font-size:.9rem;padding:0 0 8px}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+thead th{background:var(--bg);font-weight:700;white-space:nowrap}
+tbody th{background:var(--bg);font-weight:700}
+td.ck{text-align:center;width:2.4em}
+td.ck label{display:block;cursor:pointer}
+td.ck input{width:18px;height:18px;margin:3px 0 0}
+.nb{display:inline-block;background:#fff;border:1.5px solid currentColor;border-radius:3px;padding:0 6px;font-size:.84rem;font-weight:700;white-space:nowrap}
+.nb.n-24{color:var(--c24)} .nb.n-gnd{color:var(--cgnd)} .nb.n-d{color:var(--cd)} .nb.n-5v{color:var(--c5)} .nb.n-sig{color:var(--csig)} .nb.n-gate{color:var(--cgate)} .nb.n-ac{color:var(--cac)}
+
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 32px;align-items:start}
+.cols section h2{margin-top:32px}
+.cols .warn{margin:0 0 12px}
+.prose{max-width:76ch}
+.sources{font-size:.92rem}
+.sources li{overflow-wrap:anywhere}
+footer{margin-top:44px;color:var(--muted);font-size:.88rem;border-top:1px solid var(--line);padding-top:12px}
+
+@media (max-width:900px){
+  .closeups,.cols{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:1400px){.pan-hint{display:block}}
+@media (max-width:720px){
+  .wrap{padding:20px 16px 48px}
+  body{font-size:16px}
+  h1{font-size:1.65rem}
+  .panel{padding:10px}
+  table.conn,table.conn tbody,table.conn tr,table.conn td,table.conn tbody th{display:block;width:100%}
+  table.conn caption{display:block}
+  table.conn thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  table.conn tr{border:1px solid var(--line);border-bottom:0;padding:6px 10px;position:relative}
+  table.conn tbody tr:last-child{border-bottom:1px solid var(--line)}
+  table.conn tbody th{margin:0 -10px;width:auto;padding:6px 10px;border:0}
+  table.conn td{border:0;padding:1px 0 1px 4.2em;position:relative}
+  table.conn td:empty{display:none}
+  table.conn td::before{content:attr(data-l);position:absolute;left:0;color:var(--muted);font-size:.86rem}
+  table.conn td.ck{position:absolute;right:8px;top:6px;width:auto;padding:0}
+  table.conn td.ck::before{content:none}
+  table.conn td.id{padding-left:0;font-weight:700}
+  table.conn td.id::before{content:none}
+}
+@media screen and (max-width:720px){
+  .dg.fit text.in{font-size:18px}
+  .dg.fit text.ts{font-size:16px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:2px 2px 6px;margin:0 -2px}
+  .chips span{flex:none}
+  .legend label{min-height:44px;white-space:nowrap}
+  table.conn{background:none}
+  table.conn tbody{background:var(--surface)}
+  table.conn tbody tr:has(> th){padding:0}
+  table.conn tbody th{margin:0}
+  table.conn td.ck{right:0;top:0}
+  table.conn td.ck label{display:flex;width:44px;height:44px;align-items:center;justify-content:center}
+  table.conn td.ck input{width:24px;height:24px;margin:0}
+}
+
+@page{size:A4 portrait;margin:11mm}
+@page land{size:A4 landscape;margin:8mm}
+@media print{
+  :root{
+    color-scheme:light;
+    --bg:#fff;--surface:#fff;--ink:#000;--muted:#333;--line:#999;--link:#000;
+    --warn-bg:#fff;--warn-ink:#000;--warn-line:#000;--stop-bg:#fff;--stop-ink:#000;--stop-line:#000;
+    --panel:#fff;--panel-ink:#000;--panel-muted:#333;
+  }
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:10.5pt;line-height:1.45}
+  .wrap{max-width:none;padding:0}
+  .pan{overflow:visible}
+  .pan-hint{display:none}
+  .main-dg{min-width:0;height:146mm}
+  .main-dg text{font-size:15.5px}
+  .main-dg text.ts{font-size:14.5px}
+  .dg.main-dg text.nl{font-size:15px}
+  .netview{page:land;break-before:page;break-after:page}
+  .netview h2{margin:0 0 4pt}
+  .netview figcaption{font-size:8pt;line-height:1.35;margin-top:2pt;max-width:none}
+  .legend{margin-bottom:3pt}
+  .panel{border:0;padding:0;break-inside:avoid}
+  .legend legend,.opt-all{display:none}
+  .legend label{min-height:0;padding:0 5px;font-size:7.5pt}
+  .chips{gap:3px}
+  .closeups{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .warn,tr,li{break-inside:avoid}
+  h2{break-after:avoid;margin-top:18pt}
+  a{text-decoration:none}
+  .sources a::after{content:" " attr(href);font-size:8pt;overflow-wrap:anywhere}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>LED 調光器接線圖</h1>
+  <p class="lede">24 V 150 W 燈條的 PWM 調光器，一塊板子的份量。每塊板子接線都一樣：ESP32 的 GPIO25 經 TC4427 驅動 IRLB3034，在燈條負端切換。</p>
+  <p class="note"><strong>這張圖怎麼來的：</strong>接線是從專案 README 的文字重建，原始接線圖已無法核對。動手和通電前，請對照手上零件的印字與資料表逐項確認。電源只寫 LRS，<strong>確切型號未確認</strong>；如果是 LRS-150-24（額定 6.5 A），150 W ÷ 24 V ＝ 6.25 A，已是額定的 96%，餘裕很小。</p>
+</header>
+
+<section aria-label="主要警告" class="warns">
+  <div class="warn stop"><h3>市電開關：115V / 230V</h3><p>台灣 110 V 市電切到 115V，220 V 插座切 230V。通電前親眼確認，README 提醒出廠位置不一定對。開關在 115V 卻接到 220 V 或 230 V 迴路，會燒毀電源（README、Mean Well FAQ）。</p></div>
+  <div class="warn stop"><h3>TC4427 pin 3 一定要接</h3><p>pin 3 才是驅動器的 GND，接到 IRLB3034 的 S，走最短路徑。pin 4 是未用的 IN B，只接 pin 4 驅動器不會動作。</p></div>
+  <div class="warn stop"><h3>Buck 先調到 5.0 V</h3><p>可調式 Buck 沒調之前可能遠高於 5 V，會燒掉 ESP32 和 TC4427。調好之前跳線拔掉、TC4427 VDD 不接。</p></div>
+  <div class="warn"><h3>MOSFET 金屬背板是 D</h3><p>鎖到金屬上要用絕緣墊加絕緣肩套，只墊絕緣墊的話，金屬螺絲還是會把 D 接到機殼。鎖好後，在斷電、拔 USB 的狀態下用電表量 D 到金屬面，必須不通。</p></div>
+  <div class="warn"><h3>功率迴路線徑</h3><p>LRS、10 A 保險絲、燈條、D、S、回到 -V 這一圈約走 6.25 A。README 沒寫線徑；Mean Well 手冊的線材表 6–10 A 用 AWG 16。</p></div>
+</section>
+
+<section class="netview" aria-labelledby="h-main">
+<h2 id="h-main">完整接線</h2>
+<figure class="panel">
+  <fieldset class="legend">
+    <legend>點一個網路，其他線路會變淡。線色之外也用線型區分，黑白列印時看線型和文字。</legend>
+    <div class="chips">
+      <span class="opt-all"><input type="radio" name="net" id="f-all" checked><label for="f-all">全部顯示</label></span>
+      <span><input type="radio" name="net" id="f-24"><label for="f-24"><svg class="n-24" width="46" height="10" aria-hidden="true"><path class="w" d="M0 5H46"/></svg>+24V（實線）</label></span>
+      <span><input type="radio" name="net" id="f-gnd"><label for="f-gnd"><svg class="n-gnd" width="46" height="10" aria-hidden="true"><path class="w" d="M0 5H46"/></svg>GND（長短線）</label></span>
+      <span><input type="radio" name="net" id="f-d"><label for="f-d"><svg class="n-d" width="46" height="10" aria-hidden="true"><path class="w" d="M0 5H46"/></svg>D 節點（中虛線）</label></span>
+      <span><input type="radio" name="net" id="f-5v"><label for="f-5v"><svg class="n-5v" width="46" height="10" aria-hidden="true"><path class="w" d="M0 5H46"/></svg>5V（短虛線）</label></span>
+      <span><input type="radio" name="net" id="f-sig"><label for="f-sig"><svg class="n-sig" width="46" height="10" aria-hidden="true"><path class="w" d="M2 5H46"/></svg>3.3 V 訊號（點線）</label></span>
+      <span><input type="radio" name="net" id="f-gate"><label for="f-gate"><svg class="n-gate" width="46" height="10" aria-hidden="true"><path class="w" d="M0 5H46"/></svg>閘極驅動（一長兩短）</label></span>
+      <span><input type="radio" name="net" id="f-ac"><label for="f-ac"><svg class="n-ac" width="46" height="10" aria-hidden="true"><path class="w" d="M0 5H46"/></svg>AC 市電側（長虛線）</label></span>
+    </div>
+  </fieldset>
+  <p class="pan-hint">圖比畫面寬，左右滑動看全圖。</p>
+  <div class="pan" tabindex="0" role="region" aria-label="完整接線圖，可左右捲動">
+  <svg class="dg main-dg" viewBox="0 72 1550 848" role="img" aria-label="完整接線圖：LRS 電源經 10 A 保險絲到 +24V 節點，分支到燈條正端、1N5822 陰極、輸入電容與 1 A 保險絲後的 Buck。燈條負端和 1N5822 陽極接 IRLB3034 的 D，S 回到 LRS -V。Buck 的 5 V 接 TC4427 pin 6，並經可拔除跳線接 ESP32 的 5V。GPIO25 經 1 千歐接 pin 2，pin 7 經 22 歐接閘極。">
+
+    <!-- 零件本體 -->
+    <g class="blocks">
+      <!-- LRS -->
+      <rect class="b" x="190" y="90" width="160" height="420" rx="6"/>
+      <text class="tt mid" x="270" y="160">LRS 電源</text>
+      <text class="ts mid" x="270" y="182">24 V，型號待確認</text>
+      <text x="202" y="195" class="tb">L</text><text x="202" y="255" class="tb">N</text><text x="202" y="315" class="tb">FG</text>
+      <text x="338" y="125" class="tb end">+V</text><text x="338" y="475" class="tb end">-V</text>
+      <rect class="cw" x="212" y="345" width="116" height="62" rx="4"/>
+      <text class="ts mid" x="270" y="369">輸入電壓開關</text>
+      <text class="tb mid" x="270" y="393">115V / 230V</text>
+      <!-- 市電 -->
+      <rect class="ci" x="36" y="175" width="84" height="30" rx="3"/><text class="mid" x="78" y="195">市電 L</text>
+      <rect class="ci" x="36" y="235" width="84" height="30" rx="3"/><text class="mid" x="78" y="255">市電 N</text>
+      <rect class="ci" x="36" y="295" width="84" height="30" rx="3"/><text class="mid" x="78" y="315">地線</text>
+      <!-- 保險絲 -->
+      <rect class="b" x="378" y="104" width="84" height="32" rx="3"/><text class="mid tb" x="420" y="126">10 A</text>
+      <text class="mid" x="420" y="92">保險絲</text>
+      <rect class="b" x="484" y="190" width="32" height="76" rx="3"/>
+      <text class="tb" x="524" y="224">1 A</text><text x="524" y="244">保險絲</text>
+      <!-- 電解電容 -->
+      <rect class="b alt" x="906" y="192" width="48" height="70" rx="6"/>
+      <text class="big mid" x="930" y="216">+</text><text class="big mid" x="930" y="254">−</text>
+      <text class="tb" x="964" y="200">電解電容</text><text x="964" y="219">470–1000 µF</text>
+      <text class="ts" x="964" y="237">35 V 以上，建議 50 V</text><text class="ts" x="964" y="254">低 ESR</text>
+      <!-- 24 V 陶瓷 -->
+      <rect class="b alt" x="1106" y="200" width="34" height="54" rx="2"/>
+      <text class="tb" x="1148" y="212">陶瓷電容</text><text class="ts" x="1148" y="231">容值 README</text><text class="ts" x="1148" y="248">未指定</text>
+      <!-- Buck -->
+      <rect class="b alt" x="560" y="320" width="200" height="140" rx="6"/>
+      <text class="tb" x="572" y="355">IN+</text><text class="tb" x="572" y="415">IN−</text>
+      <text class="tb end" x="748" y="355">OUT−</text><text class="tb end" x="748" y="415">OUT+</text>
+      <text class="tt mid" x="660" y="389">LM2596 Buck</text>
+      <text class="ts mid" x="660" y="444">輸出先調到 5.0 V</text>
+      <!-- 跳線 -->
+      <rect class="b dash" x="650" y="475" width="80" height="30" rx="5"/>
+      <text class="ts mid tb" x="690" y="495">5V 跳線</text>
+      <text class="ts mid" x="690" y="524">可拔除</text>
+      <!-- ESP32 -->
+      <rect class="b alt" x="440" y="620" width="220" height="210" rx="6"/>
+      <text class="tb mid" x="580" y="645">5V</text>
+      <text class="tt mid" x="550" y="682">ESP32-WROOM-32</text>
+      <text class="ts mid" x="516" y="706">開發板</text>
+      <text class="tb end" x="648" y="705">GPIO25</text>
+      <text class="ts mid" x="550" y="775">USB 與 Buck 不可同時供電</text>
+      <text class="tb mid" x="540" y="819">GND</text>
+      <!-- TC4427 -->
+      <path class="b" d="M850 430H920a10 10 0 0 0 20 0H1010V690H850Z"/>
+      <circle cx="868" cy="448" r="5" fill="#3a3a36"/>
+      <text class="tt mid" x="930" y="462">TC4427CPA</text>
+      <text x="860" y="495">1 NC</text><text x="860" y="550">2 IN A</text><text x="860" y="605" class="tb">3 GND</text><text x="860" y="660">4 IN B</text>
+      <text class="end" x="1000" y="495">NC 8</text><text class="end" x="1000" y="550">OUT A 7</text><text class="end" x="1000" y="605">VDD 6</text><text class="end" x="1000" y="660">OUT B 5</text>
+      <!-- 空接 -->
+      <path class="nc" d="M850 490H828M1010 490H1032M1010 655H1032"/>
+      <path class="nc" d="M823 485l10 10m0-10l-10 10M1027 485l10 10m0-10l-10 10M1027 650l10 10m0-10l-10 10"/>
+      <text class="ts mid" x="830" y="477">空接</text><text class="ts mid" x="1032" y="477">空接</text><text class="ts end" x="1040" y="680">空接</text>
+      <!-- 電阻 -->
+      <rect class="b" x="720" y="686" width="60" height="28" rx="2"/><text class="mid tb" x="750" y="705">1 kΩ</text>
+      <rect class="b" x="687" y="732" width="26" height="62" rx="2"/>
+      <text class="tb" x="722" y="757">10 kΩ</text><text class="ts" x="722" y="776">開機不亂閃</text>
+      <rect class="b" x="1100" y="531" width="60" height="28" rx="2"/><text class="mid tb" x="1130" y="550">22 Ω</text>
+      <rect class="b" x="1188" y="626" width="48" height="24" rx="2"/>
+      <text class="tb" x="1188" y="672">10 kΩ</text><text class="ts" x="1188" y="690">G–S</text>
+      <!-- 1 µF -->
+      <rect class="b alt" x="1043" y="628" width="34" height="40" rx="2"/>
+      <text class="tb" x="1086" y="640">1 µF 陶瓷</text><text class="ts" x="1086" y="658">或 0.1 µF</text><text class="ts" x="1086" y="677">+ 10 µF</text>
+      <!-- 1N5822 -->
+      <rect class="b" x="1254" y="215" width="32" height="80" rx="3" style="fill:#3a3a36"/>
+      <rect x="1254" y="222" width="32" height="14" fill="#f4f2ea"/>
+      <text class="tb" x="1296" y="212">1N5822</text><text class="ts" x="1296" y="232">色環 = 陰極</text><text class="ts" x="1296" y="250">朝 +24V</text><text class="ts" x="1296" y="290">陽極接 D</text>
+      <!-- IRLB3034 -->
+      <rect class="b alt" x="1220" y="480" width="100" height="120" rx="6"/>
+      <text class="tb mid" x="1270" y="501">D</text><text class="tb mid" x="1270" y="590">S</text><text class="tb" x="1230" y="550">G</text>
+      <text class="tb mid" x="1282" y="534" style="font-size:14px">IRLB3034</text>
+      <text class="ts mid" x="1282" y="554">腳位見特寫</text>
+      <!-- 燈條 -->
+      <rect class="b" x="1390" y="210" width="130" height="140" rx="6"/>
+      <text class="big mid" x="1455" y="236">+</text>
+      <text class="tt mid" x="1455" y="274">LED 燈條</text><text class="ts mid" x="1455" y="296">24 V 150 W</text>
+      <text class="big mid" x="1455" y="340">−</text>
+    </g>
+
+    <!-- AC -->
+    <g class="net n-ac">
+      <path class="w" d="M120 190H190M120 250H190M120 310H190"/>
+      <circle class="tm" cx="190" cy="190" r="5"/><circle class="tm" cx="190" cy="250" r="5"/><circle class="tm" cx="190" cy="310" r="5"/>
+      <text class="nl" x="36" y="160">AC 市電側</text>
+    </g>
+
+    <!-- +24V -->
+    <g class="net n-24">
+      <path class="w pw" d="M350 120H378M462 120H1455V210"/>
+      <path class="w" d="M500 120V190M500 266V350H560"/>
+      <path class="w" d="M930 120V192M1123 120V200M1270 120V215"/>
+      <circle class="j" cx="500" cy="120" r="8"/><circle class="j" cx="930" cy="120" r="8"/><circle class="j" cx="1123" cy="120" r="8"/><circle class="j" cx="1270" cy="120" r="8"/>
+      <circle class="tm" cx="350" cy="120" r="5"/><circle class="tm" cx="560" cy="350" r="5"/><circle class="tm" cx="1455" cy="210" r="5"/>
+      <text class="nl" x="512" y="102">+24V 節點</text>
+      <text class="nl" x="780" y="106">+24V</text>
+      <text class="nl" x="1340" y="106">+24V</text>
+    </g>
+
+    <!-- D 節點 -->
+    <g class="net n-d">
+      <path class="w pw" d="M1455 350V430H1270V480"/>
+      <path class="w" d="M1270 295V430"/>
+      <circle class="j" cx="1270" cy="430" r="8"/>
+      <circle class="tm" cx="1455" cy="350" r="5"/><circle class="tm" cx="1270" cy="480" r="5"/>
+      <text class="nl" x="1292" y="420">D 節點：燈條 − 接 D</text>
+    </g>
+
+    <!-- 5V -->
+    <g class="net n-5v">
+      <path class="w" d="M760 410H1060V528M1060 562V600H1010"/>
+      <path class="w" d="M782 410V490H730M650 490H580V620"/>
+      <path class="w" d="M1060 600V628"/>
+      <circle class="j" cx="782" cy="410" r="7"/><circle class="j" cx="1060" cy="600" r="7"/>
+      <circle class="tm" cx="760" cy="410" r="5"/><circle class="tm" cx="1010" cy="600" r="5"/><circle class="tm" cx="580" cy="620" r="5"/>
+      <text class="nl" x="900" y="400">5V（Buck OUT+）</text>
+      <text class="nl" x="596" y="480">5V</text>
+    </g>
+
+    <!-- 3.3 V 訊號 -->
+    <g class="net n-sig">
+      <path class="w" d="M660 700H720M780 700H800V545H850"/>
+      <path class="w" d="M700 700V732"/>
+      <circle class="j" cx="700" cy="700" r="7"/>
+      <circle class="tm" cx="660" cy="700" r="5"/><circle class="tm" cx="850" cy="545" r="5"/>
+      <text class="nl" x="672" y="676">3.3 V PWM</text>
+    </g>
+    <!-- 閘極 -->
+    <g class="net n-gate">
+      <path class="w" d="M1010 545H1036M1084 545H1100M1160 545H1220"/>
+      <path class="w sol" d="M1036 545H1084"/>
+      <path class="w" d="M1180 545V600"/>
+      <path class="w sol" d="M1180 600V638H1188"/>
+      <circle class="j" cx="1180" cy="545" r="7"/>
+      <circle class="tm" cx="1010" cy="545" r="5"/><circle class="tm" cx="1220" cy="545" r="5"/>
+      <text class="nl mid" x="1130" y="522">閘極驅動</text>
+    </g>
+
+    <!-- 5V 跳過閘極線的圓弧：畫在閘極線之上，底下墊一圈面板色 -->
+    <g class="net n-5v">
+      <path class="hop" d="M1060 533a12 12 0 0 1 0 24"/>
+      <path class="w sol" d="M1060 528V533a12 12 0 0 1 0 24V562"/>
+    </g>
+
+    <!-- GND -->
+    <g class="net n-gnd">
+      <path class="w pw" d="M350 470H370V900H1270V650"/>
+      <path class="w pw sol" d="M1270 600V650"/>
+      <path class="w" d="M850 600H822V744H1252V660"/>
+      <path class="w sol" d="M1252 660V616H1270"/>
+      <path class="w sol" d="M1236 638H1252"/>
+      <path class="w" d="M850 655H838V725H858"/>
+      <path class="w" d="M930 262V296M1123 254V296M560 410H532M760 350H788M1060 668V696M700 794V820M540 830V846"/>
+      <circle class="j" cx="1270" cy="616" r="7"/><circle class="j" cx="1252" cy="638" r="7"/>
+      <circle class="tm" cx="350" cy="470" r="6"/><circle class="tm" cx="1270" cy="600" r="5"/><circle class="tm" cx="850" cy="600" r="5"/><circle class="tm" cx="850" cy="655" r="5"/><circle class="tm" cx="560" cy="410" r="5"/><circle class="tm" cx="760" cy="350" r="5"/><circle class="tm" cx="540" cy="830" r="5"/>
+      <g class="ts">
+      <rect class="tag" x="894" y="296" width="72" height="24" rx="3"/><text class="mid tb ts" x="930" y="313">GND G1</text>
+      <rect class="tag" x="1087" y="296" width="72" height="24" rx="3"/><text class="mid tb ts" x="1123" y="313">GND G2</text>
+      <rect class="tag" x="460" y="398" width="72" height="24" rx="3"/><text class="mid tb ts" x="496" y="415">GND G3</text>
+      <rect class="tag" x="788" y="338" width="72" height="24" rx="3"/><text class="mid tb ts" x="824" y="355">GND G4</text>
+      <rect class="tag" x="858" y="713" width="72" height="24" rx="3"/><text class="mid tb ts" x="894" y="730">GND G5</text>
+      <rect class="tag" x="504" y="846" width="72" height="24" rx="3"/><text class="mid tb ts" x="540" y="863">GND G6</text>
+      <rect class="tag" x="664" y="820" width="72" height="24" rx="3"/><text class="mid tb ts" x="700" y="837">GND G7</text>
+      <rect class="tag" x="1024" y="696" width="72" height="24" rx="3"/><text class="mid tb ts" x="1060" y="713">GND *</text>
+      </g>
+      <text class="nl" x="382" y="462">★ GND 星狀點</text>
+      <text class="nl" x="800" y="888">GND：S 回 LRS -V</text>
+    </g>
+
+    <!-- 圖上提醒 -->
+    <g class="notes">
+      <text class="ts" x="36" y="348">AC 端子加蓋</text>
+      <text class="ts" x="1076" y="576">不相連</text>
+
+      <rect class="cw" x="30" y="525" width="320" height="58" rx="4"/>
+      <text class="tb" x="44" y="549">通電前看開關</text>
+      <text class="ts" x="44" y="570">110 V 市電切 115V，220 V 插座切 230V</text>
+
+      <rect class="ci" x="30" y="600" width="320" height="288" rx="4"/>
+      <text class="tb" x="44" y="626">G1–G7 都回到 LRS -V</text>
+      <text class="ts" x="44" y="652">G1　電解電容 −</text>
+      <text class="ts" x="44" y="676">G2　陶瓷電容（24 V）</text>
+      <text class="ts" x="44" y="700">G3　Buck IN−</text>
+      <text class="ts" x="44" y="724">G4　Buck OUT−</text>
+      <text class="ts" x="44" y="748">G5　TC4427 pin 4</text>
+      <text class="ts" x="44" y="772">G6　ESP32 GND</text>
+      <text class="ts" x="44" y="796">G7　GPIO25 的 10 kΩ</text>
+      <text class="ts" x="44" y="824">S 用粗線畫回 -V；pin 3 和 G–S 10 kΩ 接 S。</text>
+      <text class="ts" x="44" y="846">* 1 µF 另一腳 README 未寫，見圖說。</text>
+      <text class="ts" x="44" y="868">電路圖位置不等於實際走線，見星狀接地特寫。</text>
+
+      <rect class="cw" x="590" y="176" width="288" height="96" rx="4"/>
+      <text class="tb" x="606" y="202">Buck 先調到 5.0 V</text>
+      <text class="ts" x="606" y="226">調好之前 TC4427 VDD 不接，</text>
+      <text class="ts" x="606" y="248">5V 跳線保持拔除。</text>
+
+      <rect class="cw" x="1345" y="480" width="185" height="96" rx="4"/>
+      <text class="tb" x="1358" y="506">金屬背板 = D</text>
+      <text class="ts" x="1358" y="530">鎖到金屬要加絕緣墊</text>
+      <text class="ts" x="1358" y="552">和絕緣肩套</text>
+
+      <rect class="cw" x="884" y="754" width="270" height="34" rx="4"/>
+      <text class="tb mid" x="1019" y="777">pin 3 必接：最短路徑到 S</text>
+
+      <rect class="ci" x="1300" y="640" width="230" height="124" rx="4"/>
+      <text class="tb" x="1314" y="666">粗線 = 功率迴路</text>
+      <text class="ts" x="1314" y="690">約 6.25 A。README 未寫線徑，</text>
+      <text class="ts" x="1314" y="712">Mean Well 手冊的線材表</text>
+      <text class="ts" x="1314" y="734">6–10 A 用 AWG 16。</text>
+    </g>
+  </svg>
+  </div>
+  <figcaption><strong>怎麼讀：</strong>實心圓點代表相連，空心小圓圈是零件端子。全圖只有一處線路跨越：5V 線以圓弧跳過閘極線，兩條線不相連。G1–G7 標籤的另一端都回到 LRS -V；pin 3 直接畫到 S，就在 S 的端子旁接上，G–S 10 kΩ 接在同一小段線上（和星狀接地特寫相同）；GND * 是推論的那一腳，接在 pin 3 旁邊。<br><strong>* 1 µF 的另一腳：</strong>README 只寫「腳邊放」，沒寫另一腳。旁路電容的另一腳一定是 GND，這裡標成 GND；既然要放在腳邊，實際上就近接到 pin 3（推論，請自行確認）。24 V 陶瓷電容的容值 README 也沒有寫，這裡不代填。</figcaption>
+</figure>
+</section>
+
+<section aria-labelledby="h-close">
+<h2 id="h-close">特寫</h2>
+<div class="closeups">
+
+  <figure class="panel">
+    <svg class="dg fit" viewBox="0 0 494 410" role="img" aria-label="TC4427CPA 上視圖。缺口朝上，pin 1 在左上。左邊由上到下 1 到 4，右邊由下到上 5 到 8。">
+      <text class="mid ts" x="246" y="24">上視圖，缺口朝上，pin 1 在圓點旁</text>
+      <path class="b" d="M176 40H230a16 16 0 0 0 32 0H316V380H176Z"/>
+      <circle cx="192" cy="58" r="6" fill="#3a3a36"/>
+      <path class="nc" d="M152 90H176M316 90H340M316 330H340"/>
+      <g class="n-sig"><path class="w" d="M152 170H176"/><text class="nl end" x="146" y="164">經 1 kΩ 接</text><text class="nl end" x="146" y="185">GPIO25</text></g>
+      <g class="n-gnd"><path class="w pw sol" d="M152 250H176"/><path class="w sol" d="M152 330H176"/><text class="nl end" x="146" y="245">接 IRLB3034 的 S</text><text class="nl end" x="146" y="266">走最短路徑，必接</text><text class="nl end" x="146" y="326">接 GND</text></g>
+      <text class="ts end" x="146" y="346">未用輸入不可懸空</text>
+      <g class="n-gate"><path class="w sol" d="M316 170H340"/><text class="nl" x="346" y="164">經 22 Ω 接</text><text class="nl" x="346" y="185">IRLB3034 的 G</text></g>
+      <g class="n-5v"><path class="w sol" d="M316 250H340"/><text class="nl" x="346" y="240">接 Buck 5 V</text></g>
+      <text class="ts" x="346" y="262">腳邊 1 µF 陶瓷</text><text class="ts" x="346" y="283">或 0.1 µF + 10 µF</text>
+      <text class="end" x="146" y="96">空接</text><text x="346" y="96">空接</text><text x="346" y="336">空接</text>
+      <g class="in">
+      <text class="in tb" x="182" y="95">1 NC</text><text class="in tb" x="182" y="175">2 IN A</text><text class="in tb" x="182" y="255">3 GND</text><text class="in tb" x="182" y="335">4 IN B</text>
+      <text class="in tb end" x="310" y="95">NC 8</text><text class="in tb end" x="310" y="175">OUT A 7</text><text class="in tb end" x="310" y="255">VDD 6</text><text class="in tb end" x="310" y="335">OUT B 5</text>
+      </g>
+      <text class="tt mid" x="246" y="218">TC4427CPA</text>
+    </svg>
+    <figcaption><strong>TC4427CPA。</strong>兩路都是非反相。腳位與 Microchip DS20001422G 第 1 頁、表 3-1 相符。</figcaption>
+  </figure>
+
+  <figure class="panel">
+    <svg class="dg fit" viewBox="0 0 470 524" role="img" aria-label="IRLB3034 正面，印字面朝自己、腳朝下，由左到右 G、D、S。上方金屬背板與 D 相通。">
+      <rect class="ci" x="8" y="8" width="218" height="88" rx="4"/>
+      <text class="tb" x="20" y="34">正面這樣拿</text><text class="ts" x="20" y="60">印字朝自己、腳朝下</text><text class="ts" x="20" y="82">由左到右 G、D、S</text>
+      <rect class="cw" x="244" y="8" width="218" height="88" rx="4"/>
+      <text class="tb" x="256" y="34">金屬背板 = D</text><text class="ts" x="256" y="60">鎖到金屬要加絕緣墊</text><text class="ts" x="256" y="82">和絕緣肩套</text>
+      <rect x="140" y="110" width="190" height="88" rx="4" fill="#c7cad0" stroke="#3a3a36" stroke-width="2"/>
+      <circle cx="205" cy="154" r="18" fill="#fdfdfa" stroke="#3a3a36" stroke-width="2"/>
+      <text class="tb" x="238" y="160">背板 = D</text>
+      <rect x="140" y="198" width="190" height="120" fill="#2c2c2a" stroke="#3a3a36" stroke-width="2"/>
+      <text class="tt mid inv" x="235" y="264">IRLB3034</text>
+      <g class="n-gate"><path class="w" d="M180 398V426H80V444"/><path d="M180 318V398" stroke="#00745c" stroke-width="9"/></g>
+      <g class="n-d"><path class="w" d="M235 398V444"/><path d="M235 318V398" stroke="#6a3fb5" stroke-width="9"/></g>
+      <g class="n-gnd"><path class="w" d="M290 398V426H390V444"/><path d="M290 318V398" stroke="#161616" stroke-width="9"/></g>
+      <text class="big mid halo" x="160" y="368">G</text><text class="big mid halo" x="255" y="368">D</text><text class="big mid halo" x="310" y="368">S</text>
+      <g class="n-gate"><text class="nl mid" x="80" y="464">G</text><text class="ts mid" x="80" y="486">22 Ω 到 pin 7</text><text class="ts mid" x="80" y="506">10 kΩ 到 S</text></g>
+      <g class="n-d"><text class="nl mid" x="235" y="464">D</text><text class="ts mid" x="235" y="486">燈條 −</text><text class="ts mid" x="235" y="506">1N5822 陽極</text></g>
+      <g class="n-gnd"><text class="nl mid" x="390" y="464">S</text><text class="ts mid" x="390" y="486">GND（LRS -V）</text><text class="ts mid" x="390" y="506">TC4427 pin 3</text></g>
+    </svg>
+    <figcaption><strong>IRLB3034。</strong>G、D、S 順序出自 IRLB3034PbF 資料表第 8 頁。該資料表沒有標示背板；「背板 = D」是 TO-220 封裝層級的說法（同系列 IRF3205PbF 標 Drain Pin 2, Tab），以斷電、拔 USB 後的電表量測為準。</figcaption>
+  </figure>
+
+  <div class="stack">
+  <figure class="panel">
+    <svg class="dg fit" viewBox="0 0 440 136" role="img" aria-label="1N5822 軸向二極體，色環端是陰極接 +24V，另一端陽極接 D。">
+      <g class="n-d"><path class="w" d="M16 72H130"/><text class="nl mid" x="74" y="118">陽極 接 D</text></g>
+      <g class="n-24"><path class="w" d="M310 72H424"/><text class="nl mid" x="350" y="118">陰極 接 +24V</text></g>
+      <rect x="130" y="44" width="180" height="56" rx="6" fill="#2c2c2a"/>
+      <rect x="266" y="44" width="26" height="56" fill="#ecebe4"/>
+      <text class="tt mid inv" x="198" y="78">1N5822</text>
+      <text class="tb mid" x="279" y="32">色環</text>
+    </svg>
+    <figcaption><strong>1N5822。</strong>色環端是陰極，接 +24V。裝反的話，MOSFET 導通時 +24V 會經二極體和 MOSFET 短路到 GND。</figcaption>
+  </figure>
+
+  <figure class="panel">
+    <svg class="dg fit" viewBox="0 0 446 206" role="img" aria-label="電解電容：正極接 +24V，負極接 GND。">
+      <rect x="110" y="14" width="220" height="110" rx="14" fill="#233049" stroke="#3a3a36" stroke-width="2"/>
+      <rect x="272" y="14" width="58" height="110" rx="10" fill="#e4e6ea"/>
+      <text class="big mid" x="301" y="48">−</text><text class="big mid" x="301" y="78">−</text><text class="big mid" x="301" y="108">−</text>
+      <text class="tb mid inv" x="191" y="52">470–1000 µF</text><text class="ts mid inv" x="191" y="78">35 V 以上</text><text class="ts mid inv" x="191" y="100">建議 50 V、低 ESR</text>
+      <g class="n-24"><path class="w" d="M170 124V190H122"/><text class="nl end" x="114" y="196">+ 接 +24V</text></g>
+      <g class="n-gnd"><path class="w" d="M301 124V162H332"/><text class="nl" x="340" y="168">− 接 GND</text></g>
+      <text class="ts" x="340" y="190">條紋側、短腳</text>
+    </svg>
+    <figcaption><strong>電解電容。</strong>靠近 MOSFET，和陶瓷電容一起接在 +24V 與 GND 之間。條紋與腳長是常見標示，README 沒寫，以外殼印字為準。</figcaption>
+  </figure>
+  </div>
+
+  <figure class="panel">
+    <svg class="dg fit" viewBox="0 0 490 506" role="img" aria-label="星狀接地：八條線從 LRS -V 一點放射到 S、電解電容、陶瓷電容、Buck IN−、Buck OUT−、TC4427 pin 4、ESP32 GND 與 GPIO25 的 10 千歐。TC4427 pin 3 和 G–S 10 千歐接在 S。">
+      <g class="n-gnd">
+        <path class="w pw sol" d="M90 253L200 31"/>
+        <path class="w sol" style="stroke-width:2.5" d="M90 253L200 211M90 253L200 255M90 253L200 299M90 253L200 343M90 253L200 387M90 253L200 431M90 253L200 475"/>
+        <path class="w sol" d="M226 48V119H250M226 77H250"/>
+        <circle class="j" cx="226" cy="77" r="6"/>
+      </g>
+      <rect class="b alt" x="2" y="208" width="88" height="90" rx="6"/>
+      <text class="tt mid" x="46" y="246">LRS -V</text><text class="ts mid" x="46" y="272">★星狀點</text>
+      <circle cx="90" cy="253" r="8" fill="#161616"/>
+      <rect class="b" x="200" y="14" width="274" height="34" rx="3"/><text class="tb" x="212" y="37">IRLB3034 的 S</text>
+      <rect class="cw" x="250" y="60" width="224" height="34" rx="3"/><text class="tb ts" x="260" y="83">TC4427 pin 3，最短路徑</text>
+      <rect class="b" x="250" y="102" width="224" height="34" rx="3"/><text class="ts" x="260" y="125">G–S 的 10 kΩ</text>
+      <rect class="b dash" x="250" y="144" width="224" height="34" rx="3"/><text class="ts" x="260" y="167">1 µF 另一腳（推論）</text>
+      <path class="nc" stroke-dasharray="4 4" d="M474 77H484V161H474"/>
+      <rect class="b" x="200" y="194" width="274" height="34" rx="3"/><text class="ts" x="212" y="217">G1 電解電容 −</text>
+      <rect class="b" x="200" y="238" width="274" height="34" rx="3"/><text class="ts" x="212" y="261">G2 陶瓷電容（24 V）</text>
+      <rect class="b" x="200" y="282" width="274" height="34" rx="3"/><text class="ts" x="212" y="305">G3 Buck IN−</text>
+      <rect class="b" x="200" y="326" width="274" height="34" rx="3"/><text class="ts" x="212" y="349">G4 Buck OUT−</text>
+      <rect class="b" x="200" y="370" width="274" height="34" rx="3"/><text class="ts" x="212" y="393">G5 TC4427 pin 4</text>
+      <rect class="b" x="200" y="414" width="274" height="34" rx="3"/><text class="ts" x="212" y="437">G6 ESP32 GND</text>
+      <rect class="b" x="200" y="458" width="274" height="34" rx="3"/><text class="ts" x="212" y="481">G7 GPIO25 的 10 kΩ</text>
+    </svg>
+    <figcaption><strong>星狀接地。</strong>README 裡的 GND 都是同一點：LRS 的 -V 端子。每條線各自回到這一點，不要串接。例外是接在 S 的 pin 3 和 G–S 10 kΩ：pin 3 不另外拉回 -V，就近接 S。S 到 -V 走功率電流，這條線要最粗。</figcaption>
+  </figure>
+</div>
+</section>
+
+<section aria-labelledby="h-table">
+<h2 id="h-table">連接表</h2>
+<table class="conn">
+<caption>每條線一列，焊好一條勾一條。勾選不會儲存，要留紀錄請列印。</caption>
+<thead><tr><th scope="col">完成</th><th scope="col">編號</th><th scope="col">從</th><th scope="col">經過</th><th scope="col">到</th><th scope="col">網路</th><th scope="col">備註</th></tr></thead>
+<tbody>
+<tr><th colspan="7" scope="rowgroup">功率迴路</th></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P1 完成"></label></td><td class="id" data-l="編號">P1</td><td data-l="從">LRS +V</td><td data-l="經過">10 A 保險絲</td><td data-l="到">+24V 節點</td><td data-l="網路"><span class="nb n-24">+24V</span></td><td data-l="備註">功率迴路</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P2 完成"></label></td><td class="id" data-l="編號">P2</td><td data-l="從">+24V 節點</td><td data-l="經過"></td><td data-l="到">燈條 +</td><td data-l="網路"><span class="nb n-24">+24V</span></td><td data-l="備註">功率迴路</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P3 完成"></label></td><td class="id" data-l="編號">P3</td><td data-l="從">燈條 −</td><td data-l="經過"></td><td data-l="到">IRLB3034&nbsp;D</td><td data-l="網路"><span class="nb n-d">D 節點</span></td><td data-l="備註">功率迴路</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P4 完成"></label></td><td class="id" data-l="編號">P4</td><td data-l="從">IRLB3034&nbsp;S</td><td data-l="經過"></td><td data-l="到">LRS -V</td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註">功率迴路</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P5 完成"></label></td><td class="id" data-l="編號">P5</td><td data-l="從">1N5822 陰極（色環）</td><td data-l="經過"></td><td data-l="到">+24V 節點</td><td data-l="網路"><span class="nb n-24">+24V</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P6 完成"></label></td><td class="id" data-l="編號">P6</td><td data-l="從">1N5822 陽極</td><td data-l="經過"></td><td data-l="到">IRLB3034&nbsp;D</td><td data-l="網路"><span class="nb n-d">D 節點</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P7 完成"></label></td><td class="id" data-l="編號">P7</td><td data-l="從">電解電容 +</td><td data-l="經過"></td><td data-l="到">+24V 節點</td><td data-l="網路"><span class="nb n-24">+24V</span></td><td data-l="備註">470–1000 µF，35 V 以上，建議 50 V、低 ESR，靠近 MOSFET</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P8 完成"></label></td><td class="id" data-l="編號">P8</td><td data-l="從">電解電容 −</td><td data-l="經過"></td><td data-l="到">GND（G1）</td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P9 完成"></label></td><td class="id" data-l="編號">P9</td><td data-l="從">陶瓷電容</td><td data-l="經過"></td><td data-l="到">+24V 節點</td><td data-l="網路"><span class="nb n-24">+24V</span></td><td data-l="備註">容值 README 未指定，靠近 MOSFET</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="P10 完成"></label></td><td class="id" data-l="編號">P10</td><td data-l="從">陶瓷電容</td><td data-l="經過"></td><td data-l="到">GND（G2）</td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註"></td></tr>
+
+<tr><th colspan="7" scope="rowgroup">TC4427CPA</th></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T1 完成"></label></td><td class="id" data-l="編號">T1</td><td data-l="從">pin 1 NC</td><td data-l="經過"></td><td data-l="到">空接</td><td data-l="網路">無</td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T2 完成"></label></td><td class="id" data-l="編號">T2</td><td data-l="從">pin 2 IN A</td><td data-l="經過">1 kΩ</td><td data-l="到">ESP32 GPIO25</td><td data-l="網路"><span class="nb n-sig">3.3 V 訊號</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T3 完成"></label></td><td class="id" data-l="編號">T3</td><td data-l="從"><strong>pin 3 GND</strong></td><td data-l="經過"></td><td data-l="到"><strong>IRLB3034&nbsp;S</strong></td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註"><strong>走最短路徑，一定要接</strong></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T4 完成"></label></td><td class="id" data-l="編號">T4</td><td data-l="從">pin 4 IN B</td><td data-l="經過"></td><td data-l="到">GND（G5）</td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註">未使用的輸入不可懸空</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T5 完成"></label></td><td class="id" data-l="編號">T5</td><td data-l="從">pin 5 OUT B</td><td data-l="經過"></td><td data-l="到">空接</td><td data-l="網路">無</td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T6 完成"></label></td><td class="id" data-l="編號">T6</td><td data-l="從">pin 6 VDD</td><td data-l="經過"></td><td data-l="到">Buck OUT+</td><td data-l="網路"><span class="nb n-5v">5V</span></td><td data-l="備註">Buck 調好 5.0 V 才接</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T7 完成"></label></td><td class="id" data-l="編號">T7</td><td data-l="從">pin 6 腳邊</td><td data-l="經過">1 µF 陶瓷（或 0.1 µF + 10 µF）</td><td data-l="到">GND *</td><td data-l="網路"><span class="nb n-5v">5V</span> <span class="nb n-gnd">GND</span></td><td data-l="備註">* 另一腳 README 未寫，就近接 pin 3 是推論</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T8 完成"></label></td><td class="id" data-l="編號">T8</td><td data-l="從">pin 7 OUT A</td><td data-l="經過">22 Ω</td><td data-l="到">IRLB3034&nbsp;G</td><td data-l="網路"><span class="nb n-gate">閘極驅動</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="T9 完成"></label></td><td class="id" data-l="編號">T9</td><td data-l="從">pin 8 NC</td><td data-l="經過"></td><td data-l="到">空接</td><td data-l="網路">無</td><td data-l="備註"></td></tr>
+
+<tr><th colspan="7" scope="rowgroup">訊號與電源</th></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="S1 完成"></label></td><td class="id" data-l="編號">S1</td><td data-l="從">ESP32 GPIO25</td><td data-l="經過">10 kΩ</td><td data-l="到">GND（G7）</td><td data-l="網路"><span class="nb n-sig">3.3 V 訊號</span> <span class="nb n-gnd">GND</span></td><td data-l="備註">開機時燈不亂閃</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="S2 完成"></label></td><td class="id" data-l="編號">S2</td><td data-l="從">IRLB3034&nbsp;G</td><td data-l="經過">10 kΩ</td><td data-l="到">IRLB3034&nbsp;S</td><td data-l="網路"><span class="nb n-gate">閘極驅動</span> <span class="nb n-gnd">GND</span></td><td data-l="備註">靠近 MOSFET</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="S3 完成"></label></td><td class="id" data-l="編號">S3</td><td data-l="從">+24V 節點</td><td data-l="經過">1 A 保險絲</td><td data-l="到">Buck IN+</td><td data-l="網路"><span class="nb n-24">+24V</span></td><td data-l="備註">LRS 量到 24 V 後，斷電再接</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="S4 完成"></label></td><td class="id" data-l="編號">S4</td><td data-l="從">Buck IN−</td><td data-l="經過"></td><td data-l="到">GND（G3）</td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="S5 完成"></label></td><td class="id" data-l="編號">S5</td><td data-l="從">Buck OUT−</td><td data-l="經過"></td><td data-l="到">GND（G4）</td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="S6 完成"></label></td><td class="id" data-l="編號">S6</td><td data-l="從">Buck OUT+</td><td data-l="經過">可拔除跳線</td><td data-l="到">ESP32 5V</td><td data-l="網路"><span class="nb n-5v">5V</span></td><td data-l="備註">Buck 調好 5.0 V 才接；用 USB 時先拔掉</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="S7 完成"></label></td><td class="id" data-l="編號">S7</td><td data-l="從">ESP32 GND</td><td data-l="經過"></td><td data-l="到">GND（G6）</td><td data-l="網路"><span class="nb n-gnd">GND</span></td><td data-l="備註"></td></tr>
+
+<tr><th colspan="7" scope="rowgroup">交流側</th></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="A1 完成"></label></td><td class="id" data-l="編號">A1</td><td data-l="從">市電 L</td><td data-l="經過"></td><td data-l="到">LRS L</td><td data-l="網路"><span class="nb n-ac">AC</span></td><td data-l="備註">先確認 115V / 230V 開關</td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="A2 完成"></label></td><td class="id" data-l="編號">A2</td><td data-l="從">市電 N</td><td data-l="經過"></td><td data-l="到">LRS N</td><td data-l="網路"><span class="nb n-ac">AC</span></td><td data-l="備註"></td></tr>
+<tr><td class="ck"><label><input type="checkbox" aria-label="A3 完成"></label></td><td class="id" data-l="編號">A3</td><td data-l="從">地線</td><td data-l="經過"></td><td data-l="到">LRS FG</td><td data-l="網路"><span class="nb n-ac">AC</span></td><td data-l="備註">AC 端子加蓋</td></tr>
+</tbody>
+</table>
+</section>
+
+<div class="cols">
+<section aria-labelledby="h-solder">
+<h2 id="h-solder">焊接順序</h2>
+<div class="warn stop"><h3>市電有觸電危險</h3><p>所有接線都在市電插頭拔除的狀態下進行，AC 端子加蓋後才可插電。</p></div>
+<p>README 沒有焊接順序。這是依上電步驟排的建議，重點是 Buck IN+ 和 5 V 的兩條線留到最後。</p>
+<ol>
+  <li>TC4427 周邊：1 kΩ、22 Ω、兩顆 10 kΩ、pin 3 到 S、pin 4 到 GND、腳邊電容。</li>
+  <li>LRS 接線：L、N、FG 地線，AC 端子加蓋。功率迴路：10 A 保險絲、1N5822、電解和陶瓷電容、D、S。MOSFET 裝散熱片，除非溫度測試證明可以不裝。</li>
+  <li>接 GND，各拉一條線回 LRS -V：Buck IN−（G3）、Buck OUT−（G4）、ESP32 GND（G6）。</li>
+  <li>先留空：經 1 A 保險絲到 Buck IN+ 這條線、Buck OUT+ 到 pin 6、5V 跳線。Buck IN+ 等 LRS 量到 24 V 才接，另外兩條等 Buck 調到 5.0 V 才接。</li>
+  <li>燈條最後接，驅動測試過了才需要。</li>
+</ol>
+</section>
+
+<section aria-labelledby="h-meter">
+<h2 id="h-meter">電表檢查（斷電、拔 USB）</h2>
+<ul>
+  <li>D 到散熱片或機殼的金屬面：<strong>必須不通</strong>。</li>
+  <li>TC4427 pin 3 到 S：通。</li>
+  <li>G1–G7 與 S，每一點到 LRS -V：通。</li>
+  <li>+24V 到 GND、5V 到 GND：不可短路。</li>
+  <li>pin 1、5、8 沒有接到任何東西。</li>
+  <li>電阻值：GPIO25 到 pin 2 約 1 kΩ，pin 7 到 G 約 22 Ω，G 到 S 約 10 kΩ。</li>
+</ul>
+<p>第一項出自 README，其他項是核對上面的連接表。</p>
+</section>
+
+<section aria-labelledby="h-power">
+<h2 id="h-power">供電規則</h2>
+<p>ESP32 同一時間只能有一個電源，USB 和 Buck 不可同時接，同時接可能損壞開發板。</p>
+<ul>
+  <li><strong>要用 USB：</strong>先斷電，拔掉 5V 跳線，再插 USB。</li>
+  <li><strong>要接回 Buck：</strong>先拔 USB，再插回跳線，最後通電。</li>
+</ul>
+</section>
+
+<section aria-labelledby="h-boot">
+<h2 id="h-boot">第一次上電順序</h2>
+<p>每一步過了再往下。</p>
+<ol>
+  <li><strong>調電壓。</strong>確認 LRS 開關，先只通 LRS，量到 24 V。斷電後接上 Buck 輸入（焊接時留空的 Buck IN+），跳線拔掉、TC4427 VDD 不接，再通電，把輸出調到 5.0 V。</li>
+  <li><strong>USB 測試。</strong>斷電，跳線維持拔除，插 USB 燒錄，序列埠看到連上 Wi-Fi。</li>
+  <li><strong>Buck 測試。</strong>拔 USB，插回跳線、接上 TC4427 VDD，通電。ESP32 的 5V 腳量到 5.0 V，並確認它有連上網路。</li>
+  <li><strong>驅動測試。</strong>不接燈條，HomeKit 100% 時 G 腳接近 5 V，關燈時 0 V。</li>
+  <li><strong>最低亮度。</strong>先斷電，接一條燈條，再通電，滑桿拉到 1%，調整 <code>DUTY_MIN</code> 到剛好亮著。</li>
+  <li><strong>溫度測試。</strong>滑桿放 90% 跑 30 分鐘，量 MOSFET 背板和 1N5822。不要用 100% 測，100% 時 MOSFET 不切換，測出來會以為不用散熱。用接觸式探棒量，房間最熱時背板也要在 100 °C 以下，超過就換更大的散熱片。</li>
+  <li><strong>主從同步。</strong>開家庭 App 拉滑桿，兩條燈應該一起動。</li>
+</ol>
+</section>
+</div>
+
+<section aria-labelledby="h-check" class="prose">
+<h2 id="h-check">資料表核對結果</h2>
+<p><strong>沒有資料表推翻 README 的接線，圖上的接線維持 README。</strong>TC4427 腳位、IRLB3034 腳位、1N5822 色環、LRS 端子都核對相符。下面是核對時發現要留意的地方。</p>
+<ul>
+  <li><strong>TC4427CPA 溫度等級：</strong>C 級規格是 0 °C 至 +70 °C，README 容許旁邊的 MOSFET 背板到 100 °C。驅動器附近氣溫可能超過 70 °C 的話，TC4427EPA（−40 °C 至 +85 °C）才在規格內。</li>
+  <li><strong>電源餘裕：</strong>若是 LRS-150-24，6.25 A 燈條加上 Buck 約 0.1 A（估算），剩約 0.15 A。額定從約 50 °C 開始降，機殼內偏熱時滿亮度可能超過額定。</li>
+  <li><strong>10 A 保險絲：</strong>LRS-150-24 的過載保護在 110–140%（約 7.2–9.1 A），通常比保險絲先動作，保險絲不是過載保護。</li>
+  <li><strong>1N5822：</strong>3.0 A 額定的條件是反向電壓不超過 VR(dc) 的 20%，這個電路有 24 V（額定的 60%），要降額。它走續流電流，不和燈條串聯，所以 6.25 A 不等於過載，但實際電流沒有量過。README 只在 90% 量溫度，順便在 50% 附近量一次比較保險（推論）。</li>
+  <li><strong>Buck 模組：</strong>LM2596 IC 額定輸入到 40 V，但通用模組沒有原廠文件，請看實際板子的標示和電容耐壓。「先調再接負載」是由可調輸出推得的做法，不是資料表原文。MP1584 建議輸入上限 28 V、絕對最大 30 V，而 LRS-150-24 可調到 28.8 V，過壓保護帶 28.8–33.6 V，餘裕確實不夠；該資料表也標示不建議用於新設計。</li>
+  <li><strong>開發板：</strong>5V 腳接到穩壓器的資料只適用 Espressif DevKitC V4。USB 晶片是 CH340 的話可能是相容板，供電路徑未驗證。5 V 絕不能接到 3V3 腳。ESP32-WROOM-32 資料表標示不建議用於新設計，不影響這張圖。</li>
+  <li><strong>GPIO25：</strong>可做 PWM 是從 Espressif 三份文件推得，沒有文件直接寫 GPIO25，也沒有在實體板驗證。</li>
+</ul>
+<h3 style="margin-top:18px">資料來源</h3>
+<ul class="sources">
+  <li><a href="https://ww1.microchip.com/downloads/en/DeviceDoc/20001422G.pdf">Microchip TC4426/7/8 DS20001422G</a></li>
+  <li><a href="https://www.infineon.com/dgdl/irlb3034pbf.pdf?fileId=5546d462533600a4015356616e8c1e5f">Infineon IRLB3034PbF</a></li>
+  <li><a href="https://www.infineon.com/dgdl/irf3205pbf.pdf?fileId=5546d462533600a4015355def244190c">Infineon IRF3205PbF Rev. 2.1</a></li>
+  <li><a href="https://www.onsemi.com/pdf/datasheet/1n5820-d.pdf">onsemi 1N5820/D Rev. 11</a></li>
+  <li><a href="https://www.ti.com/lit/ds/symlink/lm2596.pdf">TI LM2596 SNVS124G</a></li>
+  <li><a href="https://docs.rs-online.com/b924/A700000013716646.pdf">MP1584 Rev. 1.0（RS 鏡像）</a></li>
+  <li><a href="https://www.meanwell.com/Upload/PDF/LRS-150/LRS-150-SPEC.PDF">Mean Well LRS-150 規格書</a></li>
+  <li><a href="https://www.meanwell.com/Upload/PDF/Enclosed_Type_EN.pdf">Mean Well Enclosed Type 安裝手冊</a></li>
+  <li><a href="https://www.meanwell.com/qa.aspx?c=9">Mean Well FAQ Q9</a></li>
+  <li><a href="https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp32-devkitc/user_guide.html">Espressif ESP32-DevKitC 使用指南</a></li>
+  <li><a href="https://dl.espressif.com/dl/schematics/esp32_devkitc_v4_sch.pdf">Espressif ESP32-DevKitC V4 電路圖</a></li>
+  <li><a href="https://documentation.espressif.com/esp32-wroom-32_datasheet_en.pdf">Espressif ESP32-WROOM-32 資料表</a></li>
+  <li><a href="https://documentation.espressif.com/esp32_datasheet_en.pdf">Espressif ESP32 Series 資料表</a></li>
+  <li><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html">ESP-IDF GPIO 文件</a></li>
+</ul>
+</section>
+
+<footer>接線以專案 README 的「接線」章節為準。資料表核對不包含實體量測；通電前請自行驗證。</footer>
+</div>
+</body>
+</html>
